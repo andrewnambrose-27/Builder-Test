@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>27tools Builder Test</title>
+    <meta name="description" content="External staging test for the Kitory builder API.">
+    <link rel="icon" href="https://kitory.co/favicon/favicon.ico" sizes="any">
+    <link rel="icon" type="image/svg+xml" href="https://kitory.co/favicon/favicon.svg">
+    <link rel="stylesheet" href="https://kitory.co/public/styles.css?v=20260703-27tools-test">
+    <link rel="stylesheet" href="https://kitory.co/public/frontend.css?v=20260703-27tools-test">
+    <style>
+      .connection-check {
+        align-items: center;
+        background: #eef7f5;
+        border-bottom: 1px solid rgba(47, 127, 115, 0.18);
+        color: #1f2937;
+        display: flex;
+        font: 700 13px/1.4 system-ui, sans-serif;
+        gap: 10px;
+        justify-content: center;
+        min-height: 38px;
+        padding: 8px 16px;
+      }
+
+      .connection-check[data-state="ok"] {
+        color: #2f7f73;
+      }
+
+      .connection-check[data-state="error"] {
+        background: #fff4f4;
+        color: #b42318;
+      }
+    </style>
+  </head>
+  <body class="builder-page">
+    <div id="connectionCheck" class="connection-check" data-state="checking">Checking Kitory API connection...</div>
+
+    <header class="topbar">
+      <a class="brand" href="/">
+        <img src="https://kitory.co/images/Kitory%20Logo.svg" alt="Kitory">
+      </a>
+      <span class="topbar-title">27tools builder test</span>
+      <span></span>
+    </header>
+
+    <main>
+      <section id="builderCatalog" class="builder-catalog">
+        <div id="builderBreadcrumb" class="catalog-breadcrumb"></div>
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h1 id="builderCatalogTitle">Categories</h1>
+              <p id="builderCatalogIntro">Choose a category to start building a kit.</p>
+            </div>
+          </div>
+          <div id="categoryGrid" class="catalog-grid"></div>
+          <div id="productGrid" class="catalog-grid" hidden></div>
+        </section>
+      </section>
+
+      <section id="builderDesigner" class="builder-designer" hidden>
+        <div id="builderDesignerBreadcrumb" class="catalog-breadcrumb"></div>
+        <section id="frontend" class="workspace is-active">
+          <section class="customer-shell">
+            <div class="stage-column">
+              <div class="view-actions">
+                <button id="frontView" class="is-selected" type="button">View Front</button>
+                <button id="backView" type="button">View Back</button>
+                <button id="splitView" type="button">Front &amp; Back</button>
+              </div>
+              <div id="customerPreview" class="shirt-frame large"></div>
+            </div>
+
+            <div class="customizer">
+              <div id="builderStepTabs" class="steps"></div>
+              <section class="control-panel">
+                <h1 id="frontendTitle">Kit customizer</h1>
+                <div id="builderStepIntro" class="step-intro"></div>
+                <div id="builderSubsteps" class="substep-list"></div>
+                <div id="colourControls" class="colour-controls"></div>
+                <div class="extras">
+                  <label>Player name<input id="playerName" maxlength="16" placeholder="e.g. ANDREW"></label>
+                  <label>Number<input id="playerNumber" maxlength="3" placeholder="27"></label>
+                  <label>Club badge<input id="badgeUpload" type="file" accept="image/*"></label>
+                </div>
+                <div class="builder-step-actions">
+                  <button id="builderPrevStep" class="builder-nav-button" type="button" data-builder-step-direction="-1">Prev Step</button>
+                  <button id="builderNextStep" class="builder-nav-button primary" type="button" data-builder-step-direction="1">Next Step</button>
+                </div>
+                <button id="submitDesign" class="primary submit-design" type="button">Submit Design</button>
+                <pre id="submissionOutput" class="submission-output" hidden></pre>
+              </section>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <footer class="builder-footer">
+      <a class="footer-logo" href="/">
+        <img src="https://kitory.co/images/Kitory%20Logo.svg" alt="Kitory">
+      </a>
+      <p>External 27tools staging client powered by Kitory.</p>
+    </footer>
+
+    <script src="https://kitory.co/public/client-config.js?v=20260703-27tools-test"></script>
+    <script>
+      (function force27toolsClient(global) {
+        const client = (global.KITORY_CLIENT_CONFIGS || []).find((item) => item.slug === "27tools");
+        if (!client) return;
+        global.KITORY_DEFAULT_CLIENT = client;
+        global.document.documentElement.dataset.kitoryClient = client.slug;
+      })(globalThis);
+    </script>
+    <script src="https://kitory.co/public/app-core.js?v=20260703-27tools-test"></script>
+    <script src="https://kitory.co/public/asset-picker.js?v=20260703-27tools-test"></script>
+    <script src="https://kitory.co/public/save-progress.js?v=20260703-27tools-test"></script>
+    <script src="https://kitory.co/public/app.js?v=20260703-27tools-test"></script>
+    <script>
+      (async function checkConnection() {
+        const el = document.querySelector("#connectionCheck");
+        try {
+          const response = await fetch("https://kitory.co/api/health?client=27tools", {
+            cache: "no-store",
+            headers: { "X-Kitory-Client": "27tools" },
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || response.statusText);
+          el.dataset.state = "ok";
+          el.textContent = `Connected to Kitory API as ${data.client}`;
+        } catch (error) {
+          el.dataset.state = "error";
+          el.textContent = `Kitory API connection failed: ${error.message}`;
+        }
+      })();
+    </script>
+  </body>
+</html>
